@@ -270,4 +270,4 @@ The frontend never talks to MongoDB directly.
 
 ## Finished Tasks
 
-T01, T02, T03
+T01, T02, T03, T04, T05, T06, T07, T08

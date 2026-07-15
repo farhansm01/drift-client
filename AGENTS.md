@@ -1,362 +1,214 @@
-# Project: Drift — Car Rental Platform (Full Stack, TypeScript)
+# Project: Drift — Used Car Marketplace (Full Stack, TypeScript)
 
 ## Overview
-Drift is a full-stack car rental platform with REAL booking/reservation logic — 
-not just a static catalog. Users browse cars, view availability, book specific 
-date ranges, and manage their bookings. Hosts/admins list and manage their own 
-cars and the rentals made on them. This is a student assignment project with a 
-hard deadline — prioritize a fully working core over half-finished extras.
+Drift is a full-stack used car **marketplace/listing** platform. Users browse
+cars for sale, view details, and — once logged in — can list their own car
+for sale and manage (view/delete) the listings they've added. This is a
+student assignment with a hard deadline. Build exactly what the spec below
+asks for — nothing more. No booking system, no in-app payments, no
+admin/user role split, no dashboard.
+
+There is no in-app purchase flow. A buyer sees the price and contact info on
+a listing and reaches out to the seller directly to arrange the sale —
+same pattern as Craigslist or AutoTrader. Drift's job ends at "connect buyer
+and seller," not at "process the transaction."
 
 Tagline: "Drive further, worry less."
 
+## Architecture — TWO SEPARATE REPOS (important — read before building anything)
+This is NOT a single Next.js project doing everything. There are two 
+repositories, matching the developer's proven pattern from prior projects 
+(ReSell Hub, HireLoop, DocAppoint):
+
+- **`drift-client`** — Next.js 16 (App Router, TypeScript, Tailwind). 
+  Handles ALL frontend pages, auth (BetterAuth), and UI. Does NOT talk to 
+  MongoDB directly. `src/lib/actions/` and `src/lib/api/` contain functions 
+  that `fetch()` the deployed Express server's URL — never a local Next.js 
+  API route for Car/Review data.
+- **`drift-server`** — Node.js + Express + TypeScript, separate repo, 
+  separate deployment. Owns ALL MongoDB read/write logic for Car and Review 
+  data (the actual `db.collection("cars").insertOne(...)` etc. calls live 
+  here, not in the Next.js project). Exposes REST endpoints like 
+  `POST /api/cars`, `GET /api/cars`, `DELETE /api/cars/:id`, etc.
+
+**Where things live, concretely:**
+- Car/Review MongoDB schemas/types → `drift-server` (not `drift-client`)
+- Car/Review CRUD route handlers → `drift-server`'s Express routes
+- `drift-client`'s `src/lib/actions/cars.ts` (etc.) → just `fetch()` calls 
+  to `drift-server`'s deployed URL, nothing else
+- BetterAuth itself → lives in `drift-client` only (this stays a Next.js 
+  concern, not Express) — but `drift-server` needs a way to verify a request 
+  is from a logged-in user (see Auth note below)
+
+**Auth note for drift-server:** since BetterAuth sessions live in 
+`drift-client`, `drift-server` needs some way to know who's making a 
+request (e.g. for `createdBy` on Add Car, or for checking a Delete request 
+belongs to the right user). Simplest approach for this deadline: 
+`drift-client` fetches the current session/user id via BetterAuth 
+client-side, then sends that user id in the request body/headers to 
+`drift-server`. `drift-server` trusts it for now (no token verification) — 
+this is a deliberate scope-reduction for time, not a "correct" production 
+pattern, but acceptable for a graded student assignment with this deadline.
+
 ## Tech Stack
-- Frontend: Next.js 15 (App Router), React, **TypeScript (mandatory — this 
-  project uses TS, unlike the developer's usual JS-only projects)**
-- Styling: Tailwind CSS, hand-rolled components (no headless/primitive UI 
-  library — see Design Language below)
-- UI Libraries: Framer Motion (entrance animations, animated counters), 
-  Gravity UI icons (`@gravity-ui/icons`), react-toastify (toast 
-  notifications) — carried over from the developer's ReSell Hub frontend 
-  stack. **HeroUI is NOT used on Drift** — all components (Drawer, Avatar, 
-  Chip, Card, Button, etc.) are built by hand in Tailwind so the 
-  metallic/glassmorphism theme (see below) can be applied consistently; a 
-  generic component library would fight that look.
+**drift-client:**
+- Next.js 16 (App Router), React, TypeScript (mandatory)
+- Styling: Tailwind CSS
+- Charts: Recharts (only if a stats-style section is used — not required)
+- Auth: BetterAuth v1.6.23, `--legacy-peer-deps`. No role/admin split. 
+  Google OAuth is OPTIONAL per spec.
+- Image hosting: imgbb — frontend uploads image, gets back a URL, only that 
+  URL string is stored (no binary file handling anywhere)
 
-## Design Language — Metallic / Glassmorphism
-Drift's visual identity is a metallic, glassmorphic theme — distinct from 
-ReSell Hub's look:
-- Frosted-glass surfaces: translucent panels (`backdrop-blur`, low-opacity 
-  white/gray backgrounds, thin 1px light-reflective borders) over a dark or 
-  gradient backdrop
-- Metallic accents: chrome/silver/gunmetal gradients on buttons, borders, 
-  and highlights (subtle linear/radial gradients, not flat color fills) — 
-  brushed-steel feel rather than glossy plastic
-- Depth via soft shadows + inner highlights on glass cards, not harsh drop 
-  shadows
-- Still respects the "max 3 primary + 1 neutral color" rule — the metallic 
-  tones (silver/gray/chrome) count as the neutral, paired with 1-2 accent 
-  colors (e.g. an electric blue or steel teal) for CTAs/links
-- Applies site-wide: navbar, cards, dashboard panels, modals, buttons — 
-  consistent glass + metal treatment everywhere, not just the hero section
-- Charts: Recharts (for Stats/Analytics sections)
-- Backend: **Node.js + Express.js + TypeScript**, running as a separate 
-  **Vercel serverless function** (mirrors ReSell Hub's backend exactly — 
-  `module.exports = app` with `app.listen()` gated behind 
-  `if (process.env.NODE_ENV !== 'production')`, plus a `vercel.json` with 
-  a `builds`/`routes` config pointing at the compiled entry file). Locally 
-  it still behaves like a normal server on port 5000 via `nodemon`/`tsx`.
-- Database: MongoDB (native `mongodb` driver, non-SRV Atlas connection string 
-  — developer's ISP blocks SRV DNS lookups)
-- Auth: **BetterAuth v1.6.11** (pin exactly, install with `--legacy-peer-deps`, 
-  remove `^` caret in package.json — v1.6.13+ has a breaking kysely 
-  compatibility bug) + Google OAuth via BetterAuth's built-in social provider
-- Payments: **Stripe** (test mode) — required, not optional
-- Image hosting: **imgbb** — car images are uploaded to imgbb, which returns 
-  a hosted image URL; only that URL string is stored in MongoDB (no binary 
-  image data or file uploads stored in the database or backend server)
+**drift-server:**
+- Node.js + Express + TypeScript
+- Database: MongoDB (non-SRV connection string)
+- Deployed separately from drift-client (own repo, own deployment)
 
-## Auth Architecture (resolved — mirrors ReSell Hub exactly)
-Drift uses the same hybrid auth setup as the developer's ReSell Hub project:
+## Core Concept — ONE role, no admin/user split
+There is no "admin" or "host" role. Any logged-in user can:
+- List a car for sale (`/cars/add`)
+- View and delete the listings they personally added (`/cars/manage`)
+That's the entire authenticated feature set. No bookings, no reservations, 
+no in-app payments, no dashboard, no rental-status lifecycle.
 
-- **BetterAuth runs inside Next.js**, mounted at `src/app/api/auth/[...all]/route.ts` 
-  via `toNextJsHandler(auth)`. This is same-origin, so cookies/sessions work 
-  natively for anything Next.js itself needs to do.
-- `src/lib/auth.ts` configures BetterAuth with the native MongoDB adapter 
-  (`mongodbAdapter`), the **JWT plugin** (`jwt()`), Google OAuth, and an 
-  `additionalFields.role` field defaulting to `"user"` (not `"buyer"` — 
-  Drift only has two roles). A `databaseHooks.user.create.before` hook 
-  restricts the role field to `["user", "admin"]` on signup, same pattern as 
-  ReSell Hub's `allowedRoles` check.
-- `src/lib/auth-client.ts` exposes `signIn`, `signUp`, `signOut`, 
-  `useSession`, and a `getAuthToken()` helper that fetches a JWT from 
-  `/api/auth/token` for attaching to Express requests.
-- **The separate Express server** (Vercel serverless, port 5000 locally) is 
-  the source of truth for all Car/Booking/Review CRUD. Every request from 
-  `src/lib/api/*` (GET) and `src/lib/actions/*` (mutations) attaches 
-  `Authorization: Bearer ${token}` from `getAuthToken()`, and Express 
-  verifies it. Public GETs (car listing, car details, categories) skip the 
-  token.
-- **Token verification on Express (exact pattern, mirrors ReSell Hub's 
-  `index.js`):** use `jose-cjs`'s `createRemoteJWKSet(new URL(process.env.NEXT_PUBLIC_BETTER_AUTH_URL + '/api/auth/jwks'))` 
-  once at module load, then `jwtVerify(token, JWKS)` inside a `verifyToken` 
-  middleware. Look the resulting `payload.sub` up in the `user` collection 
-  and attach it as `req.user`. **Do not add the `jsonwebtoken` package** — 
-  it's present in ReSell Hub's `package.json` but unused there; `jose-cjs` 
-  is the actual verification path.
-- **Internal bypass header:** mirror ReSell Hub's pattern where 
-  `Authorization: Internal ${process.env.INTERNAL_API_SECRET}` short-circuits 
-  `verifyToken` and sets `req.user = { role: 'internal' }`, for any 
-  server-to-server/system calls that don't go through a real user session.
-- **Auto-reconnect middleware:** since the backend runs as a Vercel serverless 
-  function, add the same reconnect-on-cold-start middleware ReSell Hub uses — 
-  checks `client.topology?.isConnected()` before each request and 
-  reconnects if needed, since serverless instances can go cold between 
-  invocations.
-- Role guard middlewares mirror ReSell Hub's `verifyAdmin`/`verifySeller`/ 
-  `verifyBuyer` pattern, collapsed to two: `verifyAdmin` and `verifyUser` 
-  (`req.user?.role !== 'admin'` / `'user'` → 403).
-- CORS mirrors ReSell Hub exactly: `origin: process.env.ALLOWED_ORIGIN`, 
-  `methods: ['GET','POST','PUT','PATCH','DELETE']`, 
-  `allowedHeaders: ['Content-Type','Authorization']`. Body parsers capped 
-  at `10mb` (`express.json`, `express.urlencoded`).
-- **Stripe checkout session creation is a Next.js API route** 
-  (`src/app/api/checkout_sessions/route.ts`), same-origin, no Bearer token 
-  needed — identical to ReSell Hub's `/api/checkout_sessions/route.js`.
-- Booking creation itself (after successful Stripe payment) goes through the 
-  Express server like all other mutations, so the overlap-check function 
-  (Critical Logic #1) lives server-side in Express and is reused by both the 
-  customer booking flow and the admin rental-edit flow.
-
-## Core Concept
-- "Item" = a car listing, added/managed by a host (logged-in user with role "admin")
-- Bookings are REAL: date-range selection, overlap/conflict checking, and 
-  price calculation are required and must work correctly
-- A car cannot be double-booked for overlapping, active date ranges
-- This is NOT a simple catalog — treat booking logic as the core, highest-risk 
-  feature and build it first
-
-## Routes
+## Routes (drift-client pages)
 | Page | Route | Access |
 |---|---|---|
 | Home | `/` | Public |
 | Explore/Listing | `/cars` | Public |
-| Car Details + Booking widget | `/cars/[id]` | Public (booking action requires login) |
-| Login / Register | `/login`, `/register` | Public |
-| Dashboard index (role redirect) | `/dashboard` | Protected — redirects to role route below |
-| Admin Dashboard | `/dashboard/admin`, `/dashboard/admin/add-car`, `/dashboard/admin/manage-cars`, `/dashboard/admin/manage-rentals`, `/dashboard/admin/analytics` | Protected — admin only |
-| User Dashboard | `/dashboard/user`, `/dashboard/user/booking-history`, `/dashboard/user/stats` | Protected — user only |
-| About / Contact | `/about`, `/contact` | Public |
+| Car Details | `/cars/[id]` | Public |
+| Login | `/login` | Public |
+| Register | `/register` | Public |
+| Add Car | `/cars/add` | Protected — redirect to `/login` if not logged in |
+| Manage Cars | `/cars/manage` | Protected — redirect to `/login` if not logged in |
+| About | `/about` | Public |
+| Contact | `/contact` | Public |
 
-**Resolved decision:** Drift uses **per-role dashboard route trees** — 
-`/dashboard/admin/*` and `/dashboard/user/*` — each with its own layout, 
-sidebar, and role guard, mirroring ReSell Hub's `AdminDashboardLayout` / 
-`BuyerDashboardLayout` / `SellerDashboardLayout` pattern exactly (just two 
-sidebars instead of three, since Drift only has `user`/`admin` roles). 
-Plain `/dashboard` is a thin index page that reads the session and redirects 
-to `/dashboard/${role}`, mirroring ReSell Hub's `DashboardIndexRedirect`.
+Naming rule: use "Car" in all user-facing labels, buttons, and routes — 
+never generic "Item" (e.g. "Add Car" not "Add Item", `/cars/add` not 
+`/items/add`).
 
-## Data Schema
-These schemas are defined and used **only on the Express backend** (e.g. 
-`server/models/` or equivalent inside the Express project) — there is no 
-`src/models` folder in the Next.js frontend. The frontend never touches 
-MongoDB directly; it only calls the Express API via `src/lib/api/` (GET) and 
-`src/lib/actions/` (mutations), so it has no need for schema definitions of 
-its own (TS types/interfaces for API response shapes can live in 
-`src/lib/types.ts` if needed, but that's separate from the DB schema).
+## Data Schema (lives in drift-server)
 
 ```
 User {
-  name, email, password (hashed via BetterAuth), 
-  role: "user" | "admin"
+  name, email, password (hashed via BetterAuth, lives in drift-client's DB 
+  collections managed by BetterAuth itself)
+  // no "role" field — every user has identical permissions
 }
 
 Car {
-  title, category, pricePerDay, seats, transmission, fuelType,
-  images[] (array of imgbb-hosted URL strings, NOT binary/file data),
-  description, location, createdBy (User ref), createdAt
-}
-
-Booking {
-  carId, userId, startDate, endDate, totalDays, totalPrice,
-  status: "pending" | "active" | "completed" | "cancelled",
-  createdAt
+  title, shortDescription, fullDescription, 
+  price (asking price, in BDT ৳ — NOT per-day, this is a sale listing), 
+  category, seats, transmission, fuelType, location,
+  image (single imgbb URL string),
+  contactInfo (seller's phone or email — how a buyer reaches them),
+  createdBy (User id string), createdAt
 }
 
 Review {
-  bookingId, carId, userId, rating, comment, createdAt
-  // tied to bookingId specifically so only users who actually completed 
-  // a rental can review — prevents fake reviews
+  carId, userId, userName, rating, comment, createdAt
 }
 ```
 
-No separate Payment or Wishlist collections — these are ReSell Hub-specific 
-and out of scope for Drift. Stripe payment status is tied directly to the 
-booking-creation flow (Critical Logic below), not a standalone collection.
-
-## Critical Logic #1: Booking Overlap Check
-Before confirming ANY booking (whether made by a customer or edited by an admin):
-1. Query all Bookings for the target `carId` where status is `"pending"` OR `"active"` 
-   (these are the only statuses that actually block a car — `completed` and 
-   `cancelled` bookings free up the car again)
-2. Check if `[newStartDate, newEndDate]` overlaps any existing 
-   `[startDate, endDate]` in that filtered set
-3. Overlap formula: `(newStart <= existingEnd) AND (newEnd >= existingStart)`
-4. If overlap found → reject with "Not available for selected dates"
-5. If no overlap → create/update Booking, calculate 
-   `totalPrice = totalDays * pricePerDay`
-
-Build this as ONE reusable function, on the Express server — both the 
-customer-facing booking flow AND the admin's rental-editing flow must call 
-the same overlap-check logic. Do not duplicate this logic in two places.
-
-## Critical Logic #2: Booking Status Lifecycle
-Statuses move forward manually — there is no GPS/IoT automation, a human 
-clicks a button at each real-world handoff point.
-
-| Status | Meaning | Who changes it, and how |
-|---|---|---|
-| `pending` | Booked, rental period hasn't started | Set automatically on booking creation |
-| `active` | Customer has physically picked up the car | Admin clicks "Mark as Picked Up" (pending → active) |
-| `completed` | Rental period is over, car returned | Admin clicks "Mark as Returned" (active → completed) |
-| `cancelled` | Booking called off before pickup | Either the customer (only while `pending`) or the admin (only while `pending`) clicks "Cancel" |
-
-### Action matrix (who can do what, per status)
-| Status | Customer can | Admin can |
-|---|---|---|
-| `pending` | Cancel | Edit, Cancel, Delete, Mark as Picked Up |
-| `active` | — | Mark as Returned |
-| `completed` | Leave a Review | Delete |
-| `cancelled` | — | Delete |
-
-Manage Rentals (admin) and Booking History (customer) both read from the same 
-existing bookings, plus the status-transition buttons above.
-
-Follow the optimistic-update-with-revert-on-error pattern established in 
-ReSell Hub's `ManageOrdersPage` (`handleStatusChange`) for every status 
-transition button here.
-
-## Dashboard Architecture (resolved)
-Two separate role-gated dashboard route trees, mirroring ReSell Hub:
-
-- `src/app/dashboard/page.tsx` — thin index redirect: reads session via 
-  `useSession()`, redirects to `/login` if logged out, otherwise to 
-  `/dashboard/${role}` (mirrors `DashboardIndexRedirect`)
-- `src/app/dashboard/admin/layout.tsx` — wraps all admin routes, uses a 
-  `useRoleGuard("admin")` hook (mirrors ReSell Hub's `sessions.ts`), renders 
-  `AdminSidebar` (desktop) + a hand-rolled slide-in mobile sidebar (Framer 
-  Motion transition + glass/metallic panel, no HeroUI `Drawer`), blocks render 
-  until role is confirmed (spinner while loading, matches 
-  `AdminDashboardLayout`)
-- `src/app/dashboard/user/layout.tsx` — same pattern with `useRoleGuard("user")` 
-  and `UserSidebar`
-- `src/components/dashboard/AdminSidebar.tsx` — nav links: Overview, Add Car, 
-  Manage Cars, Manage Rentals, Analytics, Sign Out
-- `src/components/dashboard/UserSidebar.tsx` — nav links: Overview, Booking 
-  History, Stats, Sign Out
-
-| Section | Admin/Host sees | Regular user sees |
-|---|---|---|
-| Add Car | ✅ `/dashboard/admin/add-car` | ❌ No |
-| Manage Cars (full CRUD) | ✅ `/dashboard/admin/manage-cars` | ❌ No |
-| Manage Rentals | ✅ `/dashboard/admin/manage-rentals` — bookings on THEIR cars only | ❌ No |
-| Stats (charts via Recharts) | ✅ `/dashboard/admin/analytics` — car/revenue stats | ✅ `/dashboard/user/stats` — trips taken, total spent |
-| Booking History | ❌ Not here (their bookings live in Manage Rentals) | ✅ `/dashboard/user/booking-history` — READ-ONLY, grouped/filterable by status |
-| Cancel a booking | N/A (handled inside Manage Rentals) | ✅ Only on `pending` bookings |
-| Leave a Review | N/A | ✅ Only on `completed` bookings |
-
-## Navbar Behavior
-Mirrors ReSell Hub's `AppNavbar` pattern (`useSession`/`signOut` from 
-`auth-client.ts`, desktop links + profile dropdown, mobile hamburger menu):
-- **Logged out:** Login, Register buttons (top right)
-- **Logged in:** Dashboard, Logout buttons (top right); Dashboard link 
-  points to plain `/dashboard` (which redirects to the correct role route)
-
 ## Global UI & Design Rules
-- Theme: metallic/glassmorphism throughout (see Design Language section above) 
-  — no HeroUI or other component library, all components hand-rolled in Tailwind
-- No placeholder/dummy/lorem ipsum content anywhere — everything must look real
-- Max 3 primary colors + 1 optional neutral color (metallic silver/gray/chrome 
-  tones count as the neutral)
+- No placeholder/dummy/lorem ipsum content anywhere
+- Max 3 primary colors + 1 optional neutral color
 - All cards: same size, border-radius, layout — strict visual consistency
-- Fully responsive: mobile, tablet, desktop — always, no exceptions
+- Fully responsive: mobile, tablet, desktop
 - 4 cards per row on desktop for the car listing grid
-- Skeleton loaders while data is loading (mirrors ReSell Hub's 
-  `ProductCardSkeleton` pattern — build a `CarCardSkeleton` equivalent)
+- Skeleton loader while data is loading
 - Filters on `/cars`: minimum 2 fields (category, price, transmission, fuel type)
-- Protected routes (`/dashboard/*`, booking actions) redirect unauthenticated 
+- Protected routes (`/cars/add`, `/cars/manage`) redirect unauthenticated 
   users to `/login`
-- No fetch calls inside page components — GET requests via `src/lib/api/`, 
-  mutations (POST/PATCH/DELETE) via `src/lib/actions/`, both attaching 
-  `getAuthToken()` Bearer headers for private Express endpoints (mirrors 
-  ReSell Hub's `products.ts`/`orders.ts`/etc. exactly)
-- Demo login button required on `/login` (auto-fills test credentials)
-- Date picker on `/cars/[id]` must visually disable/grey out already-booked 
-  dates for that specific car
-- Image upload flow (Add Car / Manage Cars edit form): file is uploaded 
-  directly to imgbb's API from the frontend, imgbb returns a hosted image 
-  URL, and ONLY that URL is sent to the Express backend/saved to MongoDB — 
-  do not build any local file storage or image-upload handling server-side
-- Toast notifications (react-toastify) for all success/error states on 
-  mutations, mirrors ReSell Hub throughout
+- No fetch calls inside page components — GET via `src/lib/api/`, mutations 
+  (POST/DELETE) via `src/lib/actions/` — both of these call drift-server's 
+  deployed URL, never a local Next.js API route for Car/Review data
+- All buttons and links must be clickable — no dead links anywhere
 
 ## Home Page Requirements
 - Navbar: full-width, sticky/fixed, responsive, min 3 routes logged out / 
-  min 5 routes logged in
-- Hero: 60-70% viewport height, interactive element (slider/animation/CTA) — 
-  Framer Motion entrance animations + animated stat counters, mirrors 
-  ReSell Hub's `HeroSection`
+  min 5 routes logged in (already built — 4 logged out, 6 logged in)
+- Hero: 60-70% viewport height, interactive element (slider/animation/CTA), 
+  clear visual flow into the next section
 - Minimum 7 meaningful sections (e.g. Featured Cars, How It Works, Categories, 
-  Why Choose Us, Stats, Testimonials, FAQ, CTA) — structurally mirrors 
-  ReSell Hub's `FeaturedProducts`, `PopularCategories`, `MarketplaceStats`, 
-  `TrustedSellers`/testimonials sections, reskinned for cars
+  Why Choose Us, Stats, Testimonials, FAQ, CTA)
 - Footer: fully functional, working links only, contact info + social links 
-  (mirrors ReSell Hub's `Footer`)
+  (already built)
 
-## Sample Car Catalog (for seeding realistic data — 16 cars minimum)
+## Add Car Page (`/cars/add`) — full field list
+Must include every field the Car schema requires (not just the spec's 
+minimal example list), or `/cars` filters will break on missing data:
+title, shortDescription, fullDescription, price, category (dropdown), 
+seats, transmission (dropdown), fuelType (dropdown), location, contactInfo, 
+optional image (imgbb upload). Single Submit button.
+
+## Manage Cars Page (`/cars/manage`) — exact scope per spec
+- Table/grid listing all cars the logged-in user has listed
+- Actions per row: **View, Delete** only — no Edit button
+- Clean, readable, responsive layout
+
+## Details Page (`/cars/[id]`) — exact sections per spec
+- Publicly accessible, no login required
+- Multiple images or media (use 2-3 stock images per seeded car)
+- Description / Overview section
+- Key information / Specifications section (seats, transmission, fuel type, 
+  location, and contact info for the seller)
+- Reviews / Ratings section (list seeded reviews for this car)
+- Related items section (e.g. same category)
+
+## Sample Car Catalog (for seeding — 16 cars minimum, seeded into drift-server's DB)
 Categories to cover: Sedan, SUV, Hatchback, Luxury, Van. Include variety in 
-price (৳1,800–9,000/day range), transmission (Automatic/Manual), and fuel 
-type (Petrol/Diesel/Electric/Hybrid) so filters have something real to filter.
-Use ৳ consistently everywhere prices are displayed — do not mix in `$`.
+price (৳1,800–9,000 asking price range), transmission (Automatic/Manual), 
+and fuel type (Petrol/Diesel/Electric/Hybrid). Include a realistic 
+`contactInfo` value per seeded listing (fake but plausible phone/email).
 
-## Build Order (sequenced by risk — hardest logic first)
-1. Schema + booking overlap-check logic (Critical Logic #1) — build and test 
-   this in isolation before anything depends on it
-2. BetterAuth setup (email/password + Google OAuth, pinned 1.6.11, JWT 
-   plugin + auth-client bridge)
-3. Car CRUD (Add Car, Manage Cars)
-4. Listing page (`/cars` — search, filter, sort, pagination)
-5. Details page + booking widget (date picker, price calc, overlap check, confirm)
-6. Stripe integration (test mode, one-time payment on booking confirm)
-7. Dashboard: Manage Rentals (status lifecycle + action matrix)
-8. Dashboard: user Booking History (read-only) + Stats (both roles)
-9. Home page (7 sections)
-10. About / Contact pages
+## Build Order
+1. drift-client: project setup (Next.js + TS + Tailwind)
+2. drift-server: project setup (Express + TS + MongoDB connection)
+3. drift-client: BetterAuth setup (email/password)
+4. drift-server: Car/Review schemas + CRUD routes
+5. drift-client: Add Car page + action function calling drift-server
+6. drift-client: Manage Cars page (view/delete) + action functions
+7. drift-client: Listing page (`/cars` — search, filter, sort, pagination)
+8. drift-client: Details page (images, description, specs, contact info, 
+   reviews, related cars)
+9. drift-client: Home page (7 sections)
+10. drift-client: About / Contact pages
+11. Polish & responsive QA
+12. Deploy both repos (Vercel for client, Vercel/Render for server)
 
-## Explicitly IN Scope (required, build these)
-- Real date-range booking with overlap prevention
-- Price auto-calculation based on date range
-- Full booking status lifecycle (pending → active → completed, or cancelled)
-- User's own booking history (view/cancel on pending only)
-- Admin's car listing management (full CRUD)
-- Admin's rental management (edit/cancel/delete per status matrix)
-- Stripe payment (test mode) on booking confirmation
-- Google OAuth login alongside email/password
-
-## Explicitly OUT of Scope / Stretch Goals (LOWEST PRIORITY)
-Only build these if steps 1-10 above are fully complete, tested, and working, 
-with real time remaining before the deadline:
-- Refund messaging/logic on cancellation (cosmetic only — no real refund 
-  needed since Stripe is test mode)
-- Admin dashboard beyond "manage own cars" (i.e. NOT a platform-wide 
-  view of all users/all cars/all bookings — stay scoped to the logged-in 
-  admin's own cars only)
-- Email/SMS notifications on booking confirm/cancel
-- Any calendar UI beyond a simple date-range picker with disabled dates
-- Wishlist / saved cars (not part of Drift's spec, unlike ReSell Hub)
+## Explicitly OUT of Scope — do NOT build these
+- Booking/reservation system (date picker, overlap-checking, price-per-day 
+  calculation tied to a rental period)
+- In-app purchase/checkout flow, Stripe or any payment integration
+- Admin vs. user role split — there is only one type of logged-in user
+- A "dashboard" of any kind — just the two plain pages, `/cars/add` and 
+  `/cars/manage`
+- Rental/booking status lifecycle (pending/active/completed/cancelled)
+- Edit action on Manage Cars (View + Delete only)
+- Real JWT token verification between drift-client and drift-server (see 
+  Auth note above — trusting the passed user id is an acceptable 
+  scope-reduction for this deadline)
+- Google OAuth as a requirement (optional only, skip unless time allows)
+- Stats/analytics dashboards
 
 ## Developer Context (for the AI agent's awareness)
-- Developer is a CS student (AIUB, 8th semester) building this under a 
-  ~2-day deadline alongside midterm exams — prioritize working, demoable 
-  features over exhaustive polish
-- Developer does NOT know TypeScript deeply yet — this project is a deliberate 
-  stretch since the assignment mandates it; explain TS-specific syntax/concepts 
-  briefly when introducing them, don't assume prior TS fluency
-- **Resolved:** Drift reuses the developer's ReSell Hub architecture and 
-  patterns wholesale — Express + JWT-bridged BetterAuth, native MongoDB 
-  driver with non-SRV Atlas connection string (ISP blocks SRV DNS lookups), 
-  hand-rolled Tailwind components in the metallic/glassmorphism theme (no 
-  HeroUI on this project), Framer Motion, Gravity UI icons, react-toastify, 
-  per-role dashboard route 
-  trees with sidebars/layouts/`useRoleGuard`, optimistic-update-with-revert 
-  patterns, desktop-table + mobile-card dual layouts for all data lists, 
-  and a Vercel-serverless Express backend (not Render). The only deliberate 
-  difference from ReSell Hub is the language: Drift is TypeScript throughout 
-  (frontend AND backend), ReSell Hub was JS-only.
-- Always ask before assuming — if a requirement in this file is ambiguous, 
-  ask a clarifying question rather than guessing and building the wrong thing
+- Developer is a CS student (AIUB, 8th semester) building this under a tight 
+  deadline alongside midterm exams — prioritize working, spec-accurate 
+  features over any extra polish or scope
+- Developer often works across multiple separate AI chat sessions/accounts 
+  due to usage limits — ALWAYS read this file and TASKS.md fully before 
+  building anything, and flag any inconsistency between what's asked and 
+  what's already been decided here, rather than silently building something 
+  different
+- If a requirement in this file is ambiguous, ask a clarifying question 
+  rather than guessing and building unrequested scope
+- Naming must stay consistent: "Car," never generic "Item," across UI text, 
+  routes, and variable/function names
 
 ## IMPORTANT — Before Final Submission
-Remove or .gitignore this file (and any other AI-agent config files) before 
-pushing the final repo for grading — these are build-time tools, not part 
-of the deliverable, and can look unprofessional to evaluators/recruiters if 
-left visible in the repo.
+Remove or .gitignore this file (and TASKS.md) from BOTH repos before 
+pushing for grading — these are build-time planning tools, not part of the 
+deliverable.

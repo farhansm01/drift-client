@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-const PROTECTED_PATHS = ["/items/add", "/items/manage"];
+const PROTECTED_PATHS = ["/cars/add", "/cars/manage"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -25,5 +25,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/items/add", "/items/manage"],
+  matcher: ["/cars/add", "/cars/manage"],
 };

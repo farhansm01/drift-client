@@ -29,6 +29,27 @@ interface CreateCarResult {
   error?: string;
 }
 
+export async function deleteCar(carId: string, userId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${SERVER_URL}/api/cars/${carId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: data.error || "Failed to delete car." };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("deleteCar error:", err);
+    return { success: false, error: "Network error — could not reach the server." };
+  }
+}
+
 export async function createCar(payload: CreateCarPayload): Promise<CreateCarResult> {
   try {
     const response = await fetch(`${SERVER_URL}/api/cars`, {

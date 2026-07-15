@@ -5,11 +5,15 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { getCarsByUser } from "@/lib/api/cars";
 import type { Car } from "@/types/Car";
+import { deleteCar } from "@/lib/actions/cars";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function ManageCarsPage() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadCars() {
@@ -25,6 +29,28 @@ export default function ManageCarsPage() {
       loadCars();
     }
   }, [session?.user?.id, sessionPending]);
+
+  function requestDelete(carId: string) {
+    setPendingDeleteId(carId);
+    setConfirmOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteId) return;
+
+    const result = await deleteCar(pendingDeleteId, session?.user?.id ?? "");
+
+    setConfirmOpen(false);
+
+    if (!result.success) {
+      alert(result.error || "Something went wrong.");
+      setPendingDeleteId(null);
+      return;
+    }
+
+    setCars((prev) => prev.filter((car) => car._id?.toString() !== pendingDeleteId));
+    setPendingDeleteId(null);
+  }
 
   if (sessionPending || loading) {
     return (
@@ -107,6 +133,7 @@ export default function ManageCarsPage() {
                       </Link>
                       <button
                         type="button"
+                        onClick={() => requestDelete(car._id!.toString())}
                         className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition"
                       >
                         Delete
@@ -148,6 +175,7 @@ export default function ManageCarsPage() {
                   </Link>
                   <button
                     type="button"
+                    onClick={() => requestDelete(car._id!.toString())}
                     className="flex-1 rounded-lg border border-red-500/30 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 transition"
                   >
                     Delete
@@ -158,6 +186,16 @@ export default function ManageCarsPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete this listing?"
+        message="This action cannot be undone. The listing will be permanently removed."
+        confirmLabel="Delete"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 }

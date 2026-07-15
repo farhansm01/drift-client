@@ -16,7 +16,7 @@ export default function Categories() {
           Browse by Category
         </h2>
         <p className="text-neutral-400 text-center mb-12">
-          Find exactly the type of car you're after.
+          Find exactly the type of car you&apos;re after.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {categories.map((cat) => (

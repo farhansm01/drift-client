@@ -20,7 +20,7 @@ export default function Testimonials() {
               key={t.name}
               className="rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-lg p-6"
             >
-              <p className="text-neutral-300 text-sm mb-4">"{t.text}"</p>
+              <p className="text-neutral-300 text-sm mb-4">&quote;{t.text}&quote;</p>
               <p className="text-white font-medium text-sm">{t.name}</p>
               <p className="text-neutral-500 text-xs">{t.role}</p>
             </div>

@@ -1,9 +1,9 @@
-import { ShieldCheck, Wallet, Users, MapPin } from "@gravity-ui/icons";
+import { ShieldCheck, Wallet, Persons, MapPin } from "@gravity-ui/icons";
 
 const features = [
   { icon: ShieldCheck, title: "Verified Listings", desc: "Every car listed goes through basic detail checks before going live." },
   { icon: Wallet, title: "No Hidden Fees", desc: "Drift never takes a cut — you negotiate and close directly with the seller." },
-  { icon: Users, title: "Direct Contact", desc: "Message or call the seller straight away, no waiting on approvals." },
+  { icon: Persons, title: "Direct Contact", desc: "Message or call the seller straight away, no waiting on approvals." },
   { icon: MapPin, title: "Local Focus", desc: "Built for Dhaka — listings, locations, and pricing that make sense here." },
 ];
 

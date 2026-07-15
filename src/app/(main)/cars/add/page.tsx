@@ -1,10 +1,11 @@
-// src/app/(main)/items/add/page.tsx
+// src/app/(main)/cars/add/page.tsx
 
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { createCar } from "@/lib/actions/cars";
 import ImageUpload from "@/components/ImageUpload";
 import type { CarCategory, Transmission, FuelType } from "@/types/Car";
 
@@ -139,21 +140,35 @@ export default function AddItemPage() {
     setErrors({});
     setLoading(true);
 
-    // TODO (T15): build src/lib/actions/cars.ts and call it here.
-    // Payload shape:
-    // {
-    //   title, shortDescription, fullDescription,
-    //   price: Number(form.price),
-    //   category, seats: Number(form.seats), transmission, fuelType,
-    //   location, contactInfo, image: form.image,
-    //   createdBy: session?.user?.id,
-    // }
-    // await createCar(payload) -> POST /api/cars -> redirect to /items/manage
+    if (!session?.user?.id) {
+      setErrors({ general: "You must be logged in to list a car." });
+      setLoading(false);
+      return;
+    }
 
-    console.log("Submit stub — createdBy would be:", session?.user?.id);
-    console.log("Form payload:", form);
+    const result = await createCar({
+      title: form.title.trim(),
+      shortDescription: form.shortDescription.trim(),
+      fullDescription: form.fullDescription.trim(),
+      price: Number(form.price),
+      category: form.category as CarCategory,
+      seats: Number(form.seats),
+      transmission: form.transmission as Transmission,
+      fuelType: form.fuelType as FuelType,
+      location: form.location.trim(),
+      contactInfo: form.contactInfo.trim(),
+      image: form.image,
+      userId: session.user.id,
+    });
 
     setLoading(false);
+
+    if (!result.success) {
+      setErrors({ general: result.error || "Something went wrong. Please try again." });
+      return;
+    }
+
+    router.push("/cars/manage");
   }
 
   return (

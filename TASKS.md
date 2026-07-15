@@ -162,7 +162,7 @@ repo (drift-client or drift-server) this task belongs to."
 - [ ] **T48** — Google OAuth login button (spec lists this as optional)
 
 ## Finished Tasks
-T01, T02, T04, T05, T06, T07, T08, T09, T11, T12, T13, T14, T32, T41
+T01 - T32, T41, T47
 (T03 superseded — see note in Phase 0. T10 intentionally skipped.)
 
 ## Notes / Decisions Log

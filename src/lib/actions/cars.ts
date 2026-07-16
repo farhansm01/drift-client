@@ -82,4 +82,3 @@ export async function createCar(payload: CreateCarPayload): Promise<CreateCarRes
   }
 }
 
-// updateCar and deleteCar will be added in later tasks (T18)

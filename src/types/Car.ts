@@ -17,13 +17,14 @@ export interface Car {
   title: string;
   shortDescription: string;
   fullDescription: string;
-  price: number; // asking price, in BDT (৳)
+  price: number;
   category: CarCategory;
   seats: number;
   transmission: Transmission;
   fuelType: FuelType;
   location: string;
   image: string;
+  images?: string[]; // additional photos, optional
   contactInfo: string;
   createdBy: string;
   createdAt: Date;

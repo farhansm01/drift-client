@@ -12,6 +12,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isLoggedIn = !isPending && !!session;
+  const firstName = session?.user?.name?.split(" ")[0];
 
   async function handleLogout() {
     await authClient.signOut();
@@ -41,7 +42,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-950/70 backdrop-blur-lg">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
         <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg">
-          <Car width={22} height={22} />
+          <Car width={22} height={22}  />
           Drift
         </Link>
 
@@ -59,12 +60,17 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-3">
           {isPending ? null : isLoggedIn ? (
-            <button
-              onClick={handleLogout}
-              className="rounded-lg border border-neutral-700 px-4 py-1.5 text-sm text-neutral-200 hover:bg-neutral-800 transition"
-            >
-              Logout
-            </button>
+            <>
+              <span className="text-sm text-neutral-400">
+                Welcome, <span className="text-white font-medium">{firstName}</span>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="rounded-lg border border-neutral-700 px-4 py-1.5 text-sm text-neutral-200 hover:bg-neutral-800 transition"
+              >
+                Logout
+              </button>
+            </>
           ) : (
             <>
               <Link
@@ -75,7 +81,7 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg bg-gradient-to-r from-neutral-200 to-neutral-400 px-4 py-1.5 text-sm font-medium text-neutral-900 hover:opacity-90 transition"
+                className="metallic-button rounded-lg px-4 py-1.5 text-sm font-medium text-neutral-900 hover:opacity-90 transition"
               >
                 Register
               </Link>
@@ -107,15 +113,20 @@ export default function Navbar() {
 
           <div className="pt-3 border-t border-neutral-800 flex flex-col gap-2">
             {isPending ? null : isLoggedIn ? (
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  handleLogout();
-                }}
-                className="w-full rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800 transition"
-              >
-                Logout
-              </button>
+              <>
+                <p className="text-sm text-neutral-400 px-1">
+                  Welcome, <span className="text-white font-medium">{firstName}</span>
+                </p>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800 transition"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <>
                 <Link
@@ -128,7 +139,7 @@ export default function Navbar() {
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="w-full text-center rounded-lg bg-gradient-to-r from-neutral-200 to-neutral-400 px-4 py-2 text-sm font-medium text-neutral-900 hover:opacity-90 transition"
+                  className="metallic-button w-full text-center rounded-lg px-4 py-2 text-sm font-medium text-neutral-900 hover:opacity-90 transition"
                 >
                   Register
                 </Link>

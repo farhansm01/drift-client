@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Envelope, Handset, Car } from "@gravity-ui/icons";
+import { FaFacebook, FaXTwitter, FaInstagram } from "react-icons/fa6";
 
 export default function Footer() {
     const year = new Date().getFullYear();
@@ -77,30 +78,35 @@ export default function Footer() {
                             </li>
                         </ul>
 
-                        <div className="flex gap-4 mt-4">
-
-                            <a href="https://facebook.com"
+                        <div className="flex gap-4 mt-4 items-center">
+                            
+                            <a    href="https://facebook.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-neutral-400 hover:text-white transition"
+                                className="text-neutral-400 hover:text-white transition"
+                                aria-label="Facebook"
                             >
-                                Facebook
+                                <FaFacebook size={18} />
                             </a>
 
-                            <a href="https://twitter.com"
+                            
+                            <a    href="https://twitter.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-neutral-400 hover:text-white transition"
+                                className="text-neutral-400 hover:text-white transition"
+                                aria-label="Twitter"
                             >
-                                Twitter
+                                <FaXTwitter size={18} />
                             </a>
 
-                            <a href="https://instagram.com"
+                            
+                            <a    href="https://instagram.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-neutral-400 hover:text-white transition"
+                                className="text-neutral-400 hover:text-white transition"
+                                aria-label="Instagram"
                             >
-                                Instagram
+                                <FaInstagram size={18} />
                             </a>
                         </div>
                     </div>
@@ -110,6 +116,6 @@ export default function Footer() {
                     © {year} Drift. All rights reserved.
                 </div>
             </div>
-        </footer >
+        </footer>
     );
 }

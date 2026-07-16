@@ -1,36 +1,90 @@
+"use client";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { getCarById, getAllCars } from "@/lib/api/cars";
 import { getReviewsByCarId } from "@/lib/api/reviews";
 import ReviewForm from "@/components/ReviewForm";
+import type { Car } from "@/types/Car";
+import type { Review } from "@/types/Review";
 
 interface CarDetailsPageProps {
     params: Promise<{ id: string }>;
 }
 
-export default async function CarDetailsPage({ params }: CarDetailsPageProps) {
-    const { id } = await params;
-    const car = await getCarById(id);
-    const reviews = await getReviewsByCarId(id);
+export default function CarDetailsPage({ params }: CarDetailsPageProps) {
+    const [car, setCar] = useState<Car | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [relatedCars, setRelatedCars] = useState<Car[]>([]);
+    const [activeImage, setActiveImage] = useState(0);
+    const [id, setId] = useState<string>("");
+    const [loading, setLoading] = useState(true);
 
-    if (!car) {
-        notFound();
+    useEffect(() => {
+        async function load() {
+            const { id: carId } = await params;
+            setId(carId);
+
+            const carData = await getCarById(carId);
+            if (!carData) {
+                notFound();
+                return;
+            }
+            setCar(carData);
+
+            const reviewData = await getReviewsByCarId(carId);
+            setReviews(reviewData);
+
+            const allCars = await getAllCars();
+            const related = allCars
+                .filter((c) => c.category === carData.category && c._id?.toString() !== carData._id?.toString())
+                .slice(0, 4);
+            setRelatedCars(related);
+
+            setLoading(false);
+        }
+        load();
+    }, [params]);
+
+    if (loading || !car) {
+        return <div className="mx-auto max-w-5xl px-4 py-12 text-neutral-400">Loading...</div>;
     }
 
-    const allCars = await getAllCars();
-    const relatedCars = allCars
-        .filter((c) => c.category === car.category && c._id?.toString() !== car._id?.toString())
-        .slice(0, 4);
+    const images = [car.image, ...(car.images || [])].filter(Boolean);
 
     return (
         <div className="mx-auto max-w-5xl px-4 py-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900/40 h-80">
-                    {car.image ? (
-                        <img src={car.image} alt={car.title} className="h-full w-full object-cover" />
-                    ) : (
-                        <div className="h-full w-full flex items-center justify-center text-neutral-600">
-                            No image
+                <div>
+                    {/* Main image */}
+                    <div className="rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900/40 h-80 mb-3">
+                        {images.length > 0 ? (
+                            <img
+                                src={images[activeImage]}
+                                alt={car.title}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <div className="h-full w-full flex items-center justify-center text-neutral-600">
+                                No image
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Thumbnail strip */}
+                    {images.length > 1 && (
+                        <div className="flex gap-2">
+                            {images.map((img, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setActiveImage(i)}
+                                    className={`h-16 w-20 rounded-lg overflow-hidden border-2 transition ${activeImage === i ? "border-neutral-300" : "border-transparent opacity-60"
+                                        }`}
+                                >
+                                    <img src={img} alt={`${car.title} ${i + 1}`} className="h-full w-full object-cover" />
+                                </button>
+                            ))}
                         </div>
                     )}
                 </div>

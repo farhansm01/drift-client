@@ -1,46 +1,78 @@
+import Link from "next/link";
+
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16">
-      <h1 className="text-3xl md:text-4xl font-semibold text-white mb-4">
-        About Drift
-      </h1>
-      <p className="text-neutral-400 mb-10">
-        Drive further, worry less.
-      </p>
+    <div className="mx-auto max-w-5xl px-4 py-20">
+      <div className="text-center mb-16">
+        <p className="text-xs uppercase tracking-widest text-accent-blue font-medium mb-3">
+          About Drift
+        </p>
+        <h1 className="text-3xl md:text-5xl font-semibold text-white leading-tight">
+          Buy and sell cars,
+          <br className="hidden md:block" /> directly.
+        </h1>
+        <p className="text-neutral-400 mt-4 max-w-lg mx-auto">
+          No middleman, no commission, no waiting on approvals — just people
+          in Dhaka connecting over real cars.
+        </p>
+      </div>
 
-      <div className="space-y-8">
-        <section>
-          <h2 className="text-xl font-semibold text-white mb-2">What is Drift?</h2>
-          <p className="text-neutral-300 leading-relaxed">
-            Drift is a used car marketplace built for Dhaka. We connect people
-            who want to sell their car with people looking to buy — no
-            middleman, no commission, no waiting on approvals. List your car
-            in minutes, or browse listings from real sellers and reach out
-            directly.
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
+        <div className="glass-panel rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-widest text-accent-blue font-medium mb-3">
+            The idea
           </p>
-        </section>
+          <p className="text-neutral-300 leading-relaxed text-sm">
+            Drift is a used car marketplace built for Dhaka. Sellers list
+            their car in minutes; buyers browse real listings from real
+            people — nothing sits behind an approval queue.
+          </p>
+        </div>
 
-        <section>
-          <h2 className="text-xl font-semibold text-white mb-2">How it works</h2>
-          <p className="text-neutral-300 leading-relaxed">
-            Sellers create an account and list their car with photos,
-            pricing, and contact details. Buyers browse the listings, filter
-            by category, price, or transmission, and contact sellers
-            directly to arrange a viewing and close the deal. Drift's job
-            ends at connecting the two of you — the rest happens between
-            buyer and seller, just like it should.
+        <div className="glass-panel rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-widest text-accent-blue font-medium mb-3">
+            The process
           </p>
-        </section>
+          <p className="text-neutral-300 leading-relaxed text-sm">
+            List with photos, pricing, and contact details. Buyers filter by
+            category, price, or transmission, then reach out directly to
+            arrange a viewing. Drift's job ends at the introduction.
+          </p>
+        </div>
 
-        <section>
-          <h2 className="text-xl font-semibold text-white mb-2">Why we built this</h2>
-          <p className="text-neutral-300 leading-relaxed">
-            Buying or selling a used car locally often means digging through
-            cluttered classifieds or paying a cut to a middleman. Drift keeps
-            it simple: clean listings, real contact info, and a straight
-            line between buyer and seller.
+        <div className="glass-panel rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-widest text-accent-blue font-medium mb-3">
+            The reason
           </p>
-        </section>
+          <p className="text-neutral-300 leading-relaxed text-sm">
+            Buying or selling locally usually means cluttered classifieds or
+            a cut paid to a middleman. Drift keeps it to two things: clean
+            listings, and a straight line between buyer and seller.
+          </p>
+        </div>
+      </div>
+
+      <div className="glass-panel rounded-2xl p-10 text-center">
+        <h2 className="text-xl font-semibold text-white mb-2">
+          Ready to get started?
+        </h2>
+        <p className="text-neutral-400 text-sm mb-6">
+          Browse what&apos;s available, or list your own car in minutes.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href="/cars"
+            className="metallic-button rounded-lg px-6 py-2.5 text-sm font-medium text-neutral-900 hover:opacity-90 transition"
+          >
+            Browse Cars
+          </Link>
+          <Link
+            href="/cars/add"
+            className="rounded-lg border border-neutral-700 px-6 py-2.5 text-sm text-neutral-200 hover:bg-neutral-800 transition"
+          >
+            List Your Car
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -10,8 +10,8 @@
   --accent-metal-start: #e4e4e7;
   --accent-metal-end: #71717a;
 
-  --accent-blue: #3b82f6;
-  --accent-blue-dim: #1d4ed8;
+  --accent-blue: #e8a33d;
+  --accent-blue-dim: #b87615;
 }
 
 @theme inline {
@@ -49,3 +49,4 @@ body {
   outline: 2px solid var(--accent-blue);
   outline-offset: 2px;
 }
+

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { createCar } from "@/lib/actions/cars";
 import ImageUpload from "@/components/ImageUpload";
+import MultiImageUpload from "@/components/MultiImageUpload";
 import type { CarCategory, Transmission, FuelType } from "@/types/Car";
 
 interface FormState {
@@ -61,6 +62,7 @@ export default function AddItemPage() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const [form, setForm] = useState<FormState>(initialState);
+  const [extraImages, setExtraImages] = useState<string[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
@@ -158,6 +160,7 @@ export default function AddItemPage() {
       location: form.location.trim(),
       contactInfo: form.contactInfo.trim(),
       image: form.image,
+      images: extraImages,
       userId: session.user.id,
     });
 
@@ -344,6 +347,11 @@ export default function AddItemPage() {
           <ImageUpload
             value={form.image}
             onChange={(url) => updateField("image", url)}
+          />
+
+          <MultiImageUpload
+            values={extraImages}
+            onChange={setExtraImages}
           />
 
           <button

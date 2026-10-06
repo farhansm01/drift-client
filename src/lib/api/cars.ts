@@ -32,7 +32,7 @@ export async function getAllCars(): Promise<Car[]> {
     }
 
     const data: Car[] = await response.json();
-    return data;
+    return data.filter((car) => car.approvalStatus === "approved" || !car.approvalStatus);
   } catch (err) {
     console.error("getAllCars error:", err);
     return [];

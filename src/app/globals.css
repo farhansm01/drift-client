@@ -1,52 +1,107 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0c0e;
-  --foreground: #f4f4f5;
+  --jet-black: #232c33;
+  --silver: #b2b2b2;
+  --rosy-granite: #9a8f97;
+  --silver-2: #c3baba;
+  --alabaster-grey: #e9e3e6;
 
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-border: rgba(255, 255, 255, 0.08);
-
-  --accent-metal-start: #e4e4e7;
-  --accent-metal-end: #71717a;
-
-  --accent-blue: #e8a33d;
-  --accent-blue-dim: #b87615;
+  --background: #e9e3e6;
+  --foreground: #232c33;
+  --surface: #c3baba;
+  --border: #b2b2b2;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-surface-border: var(--surface-border);
-  --color-accent-blue: var(--accent-blue);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
 }
 
+/* Glass Panels & Cards - Alabaster & Rosy Granite Theme */
 .glass-panel {
-  background: var(--surface);
-  border: 1px solid var(--surface-border);
+  background: rgba(195, 186, 186, 0.7);
+  border: 1px solid rgba(154, 143, 151, 0.4);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(35, 44, 51, 0.08);
 }
 
-.metallic-button {
-  background: linear-gradient(135deg, var(--accent-metal-start), var(--accent-metal-end));
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(195, 186, 186, 0.65));
+  border: 1px solid rgba(154, 143, 151, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: #9a8f97;
+  box-shadow: 0 10px 30px -10px rgba(35, 44, 51, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Primary Button: Solid Jet Black */
+.btn-primary {
+  background-color: #232c33;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0.85rem;
+  box-shadow: 0 4px 14px rgba(35, 44, 51, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:hover {
+  background-color: #171d22;
+  box-shadow: 0 6px 20px rgba(35, 44, 51, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0px);
+}
+
+/* Secondary Button: Rosy Granite */
+.btn-secondary {
+  background-color: #9a8f97;
+  border: 1px solid #9a8f97;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0.85rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-secondary:hover {
+  background-color: #847981;
+  border-color: #847981;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Consistent Text Utilities */
+.text-gradient-blue {
+  background: linear-gradient(135deg, #232c33 0%, #5a5057 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-rosy {
+  background: linear-gradient(135deg, #232c33 0%, #9a8f97 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 ::selection {
-  background: var(--accent-blue);
-  color: white;
+  background: #232c33;
+  color: #ffffff;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent-blue);
+  outline: 2px solid #232c33;
   outline-offset: 2px;
 }
-

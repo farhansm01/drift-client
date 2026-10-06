@@ -1,13 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Magnifier } from "@gravity-ui/icons";
 
+const CAR_SLIDES = [
+  {
+    id: 1,
+    image:
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?fm=jpg&q=80&w=3000&auto=format&fit=crop",
+    tagline: "Dhaka's Direct Car Marketplace",
+    headline: "Drive further, worry less.",
+    description: "Buy and sell used cars directly in Dhaka — zero middleman fees, 100% verified.",
+  },
+  {
+    id: 2,
+    image:
+      "https://images.unsplash.com/photo-1555215695-3004980ad54e?fm=jpg&q=80&w=3000&auto=format&fit=crop",
+    tagline: "Zero Dealer Commission",
+    headline: "Keep 100% of your car's resale value.",
+    description: "Connect directly with real local buyers and negotiate your best price.",
+  },
+  {
+    id: 3,
+    image:
+      "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?fm=jpg&q=80&w=3000&auto=format&fit=crop",
+    tagline: "100% Verified Ownership",
+    headline: "Transparent details, zero guesswork.",
+    description: "Browse cars with verified BRTA documents, clear specs, and direct seller chat.",
+  },
+  {
+    id: 4,
+    image:
+      "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?fm=jpg&q=80&w=3000&auto=format&fit=crop",
+    tagline: "Future of Clean Mobility",
+    headline: "Explore Electric & Hybrid rides.",
+    description: "Discover high-efficiency hybrid & electric vehicles ready for instant handover.",
+  },
+];
+
 export default function HeroSection() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % CAR_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -16,54 +59,93 @@ export default function HeroSection() {
   }
 
   return (
-    <section
-      className="relative flex flex-col items-center justify-center text-center px-4 h-[68vh] overflow-hidden bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2FyJTIwYmFja2dyb3VuZHxlbnwwfHwwfHx8MA%3D%3D')",
-      }}
-    >
-      <div className="absolute inset-0 bg-neutral-950/80" />
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-transparent to-neutral-950" />
+    <section className="relative flex flex-col items-center justify-center text-center px-4 h-[76vh] min-h-[540px] overflow-hidden group">
+      {/* Background Images */}
+      {CAR_SLIDES.map((slide, index) => (
+        <div
+          key={slide.id}
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out transform scale-105 ${
+            index === currentSlide ? "opacity-100 z-0 scale-100" : "opacity-0 -z-10"
+          }`}
+          style={{
+            backgroundImage: `url('${slide.image}')`,
+            transitionProperty: "opacity, transform",
+            transitionDuration: "1000ms",
+          }}
+        />
+      ))}
 
-      <div className="relative z-10 max-w-2xl">
-        <p className="text-xs uppercase tracking-widest text-accent-blue font-medium mb-4">
-          Dhaka&apos;s direct car marketplace
-        </p>
-        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight mb-4 leading-tight">
-          Drive further,
-          <br /> worry less.
+      {/* Hero Overlay Gradient - Jet Black to Alabaster Theme */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#232c33]/90 via-[#232c33]/70 to-[#e9e3e6] z-1" />
+
+      {/* Hero Main Content */}
+      <div className="relative z-10 max-w-3xl mx-auto transition-all duration-500">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-[#e9e3e6] bg-[#232c33]/90 border border-[#9a8f97]/50 backdrop-blur-xl shadow-md mb-5">
+          <span className="w-2 h-2 rounded-full bg-[#9a8f97]" />
+          {CAR_SLIDES[currentSlide].tagline}
+        </span>
+
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-4 leading-tight drop-shadow-md">
+          {CAR_SLIDES[currentSlide].headline}
         </h1>
-        <p className="text-lg text-neutral-300 mb-8 max-w-md mx-auto">
-          Buy and sell used cars directly — no middleman, no hidden fees.
+
+        <p className="text-base sm:text-lg text-[#e9e3e6]/90 mb-8 max-w-xl mx-auto font-medium leading-relaxed">
+          {CAR_SLIDES[currentSlide].description}
         </p>
 
+        {/* Search Bar */}
         <form
           onSubmit={handleSearch}
-          className="flex items-center gap-2 max-w-md mx-auto mb-6 glass-panel rounded-xl p-1.5"
+          className="flex items-center gap-2 max-w-lg mx-auto mb-8 bg-[#e9e3e6]/95 rounded-2xl p-2 shadow-xl border border-[#b2b2b2]"
         >
-          <Magnifier width={18} height={18} className="text-neutral-500 ml-2 shrink-0" />
+          <Magnifier width={20} height={20} className="text-[#232c33] ml-3 shrink-0" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by make, model..."
-            className="flex-1 bg-transparent text-white text-sm placeholder:text-neutral-500 focus:outline-none py-2"
+            className="flex-1 bg-transparent text-[#232c33] text-sm placeholder:text-[#9a8f97] focus:outline-none py-2.5 px-1 font-medium"
           />
           <button
             type="submit"
-            className="metallic-button rounded-lg px-4 py-2 text-sm font-medium text-neutral-900 hover:opacity-90 transition shrink-0"
+            className="btn-primary px-6 py-2.5 text-sm font-semibold cursor-pointer shrink-0"
           >
             Search
           </button>
         </form>
 
-        <Link
-          href="/cars/add"
-          className="text-sm text-neutral-400 hover:text-white transition underline underline-offset-4"
-        >
-          Or list your own car →
-        </Link>
+        {/* Action Button Row */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+          <Link
+            href="/cars/add"
+            className="btn-primary w-full sm:w-auto px-6 py-3 text-sm font-bold shadow-lg text-center flex items-center justify-center gap-2"
+          >
+            List Your Car Free
+          </Link>
+
+          <Link
+            href="/cars"
+            className="btn-secondary w-full sm:w-auto px-6 py-3 text-sm font-semibold text-center flex items-center justify-center gap-2"
+          >
+            Browse All Vehicles
+          </Link>
+        </div>
+      </div>
+
+      {/* Clean Bottom Slide Indicators */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-[#e9e3e6]/90 px-4 py-2.5 rounded-full border border-[#b2b2b2] shadow-md backdrop-blur-md">
+        {CAR_SLIDES.map((slide, idx) => (
+          <button
+            key={slide.id}
+            onClick={() => setCurrentSlide(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+            className={`transition-all duration-300 rounded-full cursor-pointer ${
+              idx === currentSlide
+                ? "w-8 h-2.5 bg-[#232c33]"
+                : "w-2.5 h-2.5 bg-[#c3baba] border border-[#9a8f97] hover:bg-[#9a8f97]"
+            }`}
+          />
+        ))}
       </div>
     </section>
   );

@@ -27,7 +27,10 @@ export interface Car {
   images?: string[]; // additional photos, optional
   contactInfo: string;
   createdBy: string;
+  status?: "available" | "sold";
+  isSold?: boolean;
+  approvalStatus?: "pending" | "approved" | "rejected";
   createdAt: Date;
 }
 
-export type CarInput = Omit<Car, "_id" | "createdBy" | "createdAt">;
+export type CarInput = Omit<Car, "_id" | "createdBy" | "createdAt">;

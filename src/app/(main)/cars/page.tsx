@@ -79,27 +79,31 @@ export default function ExploreCarsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12">
+    <div className="mx-auto max-w-7xl px-4 py-12 bg-[#e9e3e6]">
+      {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-white">Explore Cars</h1>
-        <p className="text-neutral-400 text-sm mt-1">
-          Browse cars listed by sellers across Dhaka.
+        <h1 className="text-3xl sm:text-4xl font-black text-[#232c33] tracking-tight">
+          Explore Vehicles
+        </h1>
+        <p className="text-[#9a8f97] text-sm sm:text-base mt-1 font-semibold">
+          Browse verified cars listed by direct owners across Dhaka.
         </p>
       </div>
 
+      {/* Filter Controls Bar */}
       <div className="flex flex-col md:flex-row gap-3 mb-8">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by car title..."
-          className="flex-1 rounded-lg bg-neutral-800 border border-neutral-700 px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+          className="flex-1 rounded-xl bg-white border border-[#b2b2b2] px-4 py-2.5 text-[#232c33] text-sm placeholder:text-[#9a8f97] font-medium focus:outline-none focus:border-[#232c33] focus:ring-2 focus:ring-[#232c33]/20 shadow-sm transition"
         />
 
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as CarCategory | "")}
-          className="rounded-lg bg-neutral-800 border border-neutral-700 px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+          className="rounded-xl bg-white border border-[#b2b2b2] px-4 py-2.5 text-[#232c33] text-sm font-semibold focus:outline-none focus:border-[#232c33] shadow-sm cursor-pointer"
         >
           <option value="">All categories</option>
           {CATEGORIES.map((c) => (
@@ -110,7 +114,7 @@ export default function ExploreCarsPage() {
         <select
           value={transmission}
           onChange={(e) => setTransmission(e.target.value as Transmission | "")}
-          className="rounded-lg bg-neutral-800 border border-neutral-700 px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+          className="rounded-xl bg-white border border-[#b2b2b2] px-4 py-2.5 text-[#232c33] text-sm font-semibold focus:outline-none focus:border-[#232c33] shadow-sm cursor-pointer"
         >
           <option value="">All transmissions</option>
           {TRANSMISSIONS.map((t) => (
@@ -121,7 +125,7 @@ export default function ExploreCarsPage() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          className="rounded-lg bg-neutral-800 border border-neutral-700 px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+          className="rounded-xl bg-white border border-[#b2b2b2] px-4 py-2.5 text-[#232c33] text-sm font-semibold focus:outline-none focus:border-[#232c33] shadow-sm cursor-pointer"
         >
           <option value="newest">Newest first</option>
           <option value="price-low">Price: Low to High</option>
@@ -134,13 +138,14 @@ export default function ExploreCarsPage() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="h-72 rounded-2xl border border-neutral-800 bg-neutral-900/40 animate-pulse"
+              className="h-72 rounded-2xl border border-[#b2b2b2] bg-white/70 animate-pulse"
             />
           ))}
         </div>
       ) : filteredCars.length === 0 ? (
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-10 text-center">
-          <p className="text-neutral-400">No cars match your search/filters.</p>
+        <div className="rounded-2xl border border-[#b2b2b2] bg-white p-12 text-center shadow-sm">
+          <p className="text-[#232c33] font-bold text-base">No cars match your search criteria.</p>
+          <p className="text-[#9a8f97] text-xs mt-1">Try clearing filters or changing search keywords.</p>
         </div>
       ) : (
         <>
@@ -150,28 +155,30 @@ export default function ExploreCarsPage() {
             ))}
           </div>
 
+          {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
+            <div className="flex items-center justify-center gap-2 mt-12">
               <button
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="rounded-lg border border-neutral-700 px-3 py-1.5 text-sm text-neutral-200 hover:bg-neutral-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="btn-secondary px-4 py-2 text-xs font-bold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 Previous
               </button>
 
               {Array.from({ length: totalPages }).map((_, i) => {
                 const page = i + 1;
+                const isActive = currentPage === page;
                 return (
                   <button
                     key={page}
                     type="button"
                     onClick={() => setCurrentPage(page)}
-                    className={`h-8 w-8 rounded-lg text-sm transition ${
-                      currentPage === page
-                        ? "bg-neutral-200 text-neutral-900"
-                        : "border border-neutral-700 text-neutral-200 hover:bg-neutral-800"
+                    className={`h-9 w-9 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
+                      isActive
+                        ? "bg-[#232c33] text-white border border-[#232c33]"
+                        : "bg-white text-[#232c33] border border-[#b2b2b2] hover:bg-[#e9e3e6]"
                     }`}
                   >
                     {page}
@@ -183,7 +190,7 @@ export default function ExploreCarsPage() {
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-lg border border-neutral-700 px-3 py-1.5 text-sm text-neutral-200 hover:bg-neutral-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="btn-secondary px-4 py-2 text-xs font-bold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 Next
               </button>

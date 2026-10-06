@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUpFromLine, Picture, TrashBin } from "@gravity-ui/icons";
+import { ArrowUpFromLine, TrashBin } from "@gravity-ui/icons";
 
 interface ImageUploadProps {
   value: string;
@@ -79,17 +79,17 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
   return (
     <div>
-      <label className="block text-sm text-neutral-300 mb-1">
-        Image <span className="text-neutral-500">(optional)</span>
+      <label className="block text-sm font-semibold text-[#232c33] mb-1.5">
+        Main Image <span className="text-[#9a8f97] font-normal">(optional)</span>
       </label>
 
       {value ? (
-        <div className="relative rounded-lg overflow-hidden border border-neutral-700">
-          <img src={value} alt="Uploaded preview" className="w-full h-48 object-cover" />
+        <div className="relative rounded-xl overflow-hidden border border-[#b2b2b2] shadow-sm">
+          <img src={value} alt="Uploaded preview" className="w-full h-52 object-cover" />
           <button
             type="button"
             onClick={handleRemove}
-            className="absolute top-2 right-2 rounded-lg bg-neutral-900/80 p-2 text-neutral-200 hover:bg-neutral-900 transition"
+            className="absolute top-2 right-2 rounded-lg bg-[#232c33]/80 p-2 text-white hover:bg-[#232c33] transition shadow-md"
             aria-label="Remove image"
           >
             <TrashBin width={16} height={16} />
@@ -97,17 +97,17 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
         </div>
       ) : (
         <label
-          className={`flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-700 bg-neutral-800/40 h-48 cursor-pointer hover:bg-neutral-800/60 transition ${
+          className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#b2b2b2] bg-[#e9e3e6]/40 h-48 cursor-pointer hover:bg-[#e9e3e6]/80 hover:border-[#232c33] transition ${
             uploading ? "opacity-60 pointer-events-none" : ""
           }`}
         >
           {uploading ? (
-            <p className="text-sm text-neutral-400">Uploading...</p>
+            <p className="text-sm font-medium text-[#232c33]">Uploading image...</p>
           ) : (
             <>
-              <ArrowUpFromLine width={22} height={22} className="text-neutral-400" />
-              <p className="text-sm text-neutral-400">Click to upload an image</p>
-              <p className="text-xs text-neutral-500">PNG, JPG up to 5MB</p>
+              <ArrowUpFromLine width={24} height={24} className="text-[#232c33]" />
+              <p className="text-sm font-semibold text-[#232c33]">Click to upload main image</p>
+              <p className="text-xs text-[#9a8f97]">PNG, JPG up to 5MB</p>
             </>
           )}
           <input
@@ -120,7 +120,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
         </label>
       )}
 
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs font-semibold text-red-500">{error}</p>}
     </div>
   );
 }

@@ -3,8 +3,8 @@ import FeaturedCars from "@/components/FeaturedCars";
 import HowItWorks from "@/components/HowItWorks";
 import Categories from "@/components/Categories";
 import WhyChooseUs from "@/components/WhyChooseUs";
-import Stats from "@/components/Stats";
-import Testimonials from "@/components/Testimonials";
+import EnvironmentalImpact from "@/components/EnvironmentalImpact";
+import ReviewsSection from "@/components/ReviewsSection";
 import FAQ from "@/components/FAQ";
 
 export default function HomePage() {
@@ -15,8 +15,8 @@ export default function HomePage() {
       <HowItWorks />
       <Categories />
       <WhyChooseUs />
-      <Stats />
-      <Testimonials />
+      <EnvironmentalImpact />
+      <ReviewsSection />
       <FAQ />
     </main>
   );

@@ -4,25 +4,28 @@ import CarCard from "@/components/CarCard";
 
 export default async function FeaturedCars() {
   const cars = await getAllCars();
-  const featured = cars.slice(0, 4); // show first 4 as "featured"
+  const featured = cars.slice(0, 4);
 
   return (
-    <section className="py-20 px-4 bg-neutral-900/40">
+    <section className="py-20 px-4 bg-[#e9e3e6] border-t border-[#b2b2b2]/40 relative">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-end justify-between mb-10">
           <div>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-2">
-              Featured Cars
+            <span className="text-xs uppercase tracking-widest text-[#9a8f97] font-bold block mb-1">
+              Handpicked Deals
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#232c33]">
+              Featured <span className="text-[#9a8f97]">Vehicles</span>
             </h2>
-            <p className="text-neutral-400">
-              A few standout listings currently available.
+            <p className="text-[#232c33]/70 text-sm mt-1 font-medium">
+              Standout verified listings ready for instant handover in Dhaka.
             </p>
           </div>
           <Link
             href="/cars"
-            className="hidden sm:block text-sm text-neutral-300 hover:text-white transition"
+            className="hidden sm:inline-flex items-center gap-1 text-sm font-bold text-[#232c33] hover:text-[#9a8f97] transition"
           >
-            View all →
+            View all listings &rarr;
           </Link>
         </div>
 

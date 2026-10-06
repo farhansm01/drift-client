@@ -15,35 +15,47 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-20 px-4 bg-neutral-900/40">
+    <section className="py-20 px-4 bg-[#e9e3e6] border-t border-[#b2b2b2]/40 relative">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-semibold text-white text-center mb-2">
-          Frequently Asked Questions
-        </h2>
-        <p className="text-neutral-400 text-center mb-12">
-          Everything you need to know before you start.
-        </p>
-        <div className="space-y-3">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-xs uppercase tracking-widest text-[#9a8f97] font-bold block mb-1">
+            Got Questions?
+          </span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-[#232c33]">
+            Frequently Asked <span className="text-[#9a8f97]">Questions</span>
+          </h2>
+          <p className="text-[#232c33]/70 text-sm mt-2 font-medium">
+            Everything you need to know before you start.
+          </p>
+        </div>
+
+        <div className="space-y-4">
           {faqs.map((faq, i) => (
             <div
               key={faq.q}
-              className="rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-lg overflow-hidden"
+              className={`rounded-2xl border transition-all duration-300 backdrop-blur-xl overflow-hidden ${
+                openIndex === i
+                  ? "bg-white border-[#232c33] shadow-md"
+                  : "bg-white/90 border-[#b2b2b2] hover:border-[#9a8f97]"
+              }`}
             >
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="w-full flex items-center justify-between p-5 text-left"
+                className="w-full flex items-center justify-between p-5 text-left cursor-pointer"
               >
-                <span className="text-white font-medium">{faq.q}</span>
+                <span className="text-[#232c33] font-bold text-base">{faq.q}</span>
                 <ChevronDown
-                  width={18}
-                  height={18}
-                  className={`text-neutral-400 transition-transform ${
-                    openIndex === i ? "rotate-180" : ""
+                  width={20}
+                  height={20}
+                  className={`text-[#9a8f97] transition-transform duration-300 ${
+                    openIndex === i ? "rotate-180 text-[#232c33]" : ""
                   }`}
                 />
               </button>
               {openIndex === i && (
-                <p className="px-5 pb-5 text-sm text-neutral-400">{faq.a}</p>
+                <p className="px-5 pb-5 text-sm text-[#232c33]/80 leading-relaxed border-t border-[#c3baba]/60 pt-3">
+                  {faq.a}
+                </p>
               )}
             </div>
           ))}

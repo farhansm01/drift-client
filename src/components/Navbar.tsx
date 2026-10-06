@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bars, Xmark, Car } from "@gravity-ui/icons";
 import { authClient } from "@/lib/auth-client";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Navbar() {
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
+  const { session, isLoggedIn, isAdmin, isPending } = useUserRole();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isLoggedIn = !isPending && !!session;
   const firstName = session?.user?.name?.split(" ")[0];
 
   async function handleLogout() {
@@ -27,7 +27,15 @@ export default function Navbar() {
     { href: "/contact", label: "Contact" },
   ];
 
-  const loggedInLinks = [
+  const adminLinks = [
+    { href: "/", label: "Home" },
+    { href: "/cars", label: "Explore" },
+    { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
+    { href: "/admin/dashboard", label: "Dashboard" },
+  ];
+
+  const userLinks = [
     { href: "/", label: "Home" },
     { href: "/cars", label: "Explore" },
     { href: "/cars/add", label: "List a Car" },
@@ -36,22 +44,28 @@ export default function Navbar() {
     { href: "/contact", label: "Contact" },
   ];
 
-  const links = isLoggedIn ? loggedInLinks : loggedOutLinks;
+  const sessionRole = (session?.user as { role?: string })?.role;
+  const isUserAdmin = isAdmin || sessionRole === "admin";
+  const links = isLoggedIn ? (isUserAdmin ? adminLinks : userLinks) : loggedOutLinks;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-950/70 backdrop-blur-lg">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
-        <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg">
-          <Car width={22} height={22}  />
-          Drift
+    <header className="sticky top-0 z-50 w-full border-b border-[#c3baba] bg-[#e9e3e6]/90 backdrop-blur-xl shadow-sm">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 md:px-6">
+        <Link href="/" className="flex items-center gap-2.5 text-[#232c33] font-black text-xl tracking-tight group">
+          <div className="p-2 rounded-xl bg-[#232c33] text-white transition shadow-md">
+            <Car width={22} height={22} />
+          </div>
+          <span className="font-black tracking-widest text-2xl text-[#232c33]">
+            DRIFT
+          </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-8">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-neutral-300 hover:text-white transition"
+              className="text-sm font-semibold text-[#232c33]/80 hover:text-[#9a8f97] transition"
             >
               {link.label}
             </Link>
@@ -61,12 +75,12 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {isPending ? null : isLoggedIn ? (
             <>
-              <span className="text-sm text-neutral-400">
-                Welcome, <span className="text-white font-medium">{firstName}</span>
+              <span className="text-sm text-[#232c33]/80">
+                Welcome, <span className="text-[#232c33] font-bold">{firstName}</span>
               </span>
               <button
                 onClick={handleLogout}
-                className="rounded-lg border border-neutral-700 px-4 py-1.5 text-sm text-neutral-200 hover:bg-neutral-800 transition"
+                className="btn-secondary px-4 py-1.5 text-sm cursor-pointer"
               >
                 Logout
               </button>
@@ -75,13 +89,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="rounded-lg border border-neutral-700 px-4 py-1.5 text-sm text-neutral-200 hover:bg-neutral-800 transition"
+                className="btn-secondary px-4.5 py-2 text-sm font-semibold"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="metallic-button rounded-lg px-4 py-1.5 text-sm font-medium text-neutral-900 hover:opacity-90 transition"
+                className="btn-primary px-5 py-2 text-sm font-bold shadow-md"
               >
                 Register
               </Link>
@@ -91,38 +105,38 @@ export default function Navbar() {
 
         <button
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="md:hidden text-neutral-200"
+          className="md:hidden text-[#232c33] p-2 rounded-xl bg-[#c3baba]/50 border border-[#9a8f97]/40"
           aria-label="Toggle menu"
         >
-          {mobileOpen ? <Xmark width={24} height={24} /> : <Bars width={24} height={24} />}
+          {mobileOpen ? <Xmark width={22} height={22} /> : <Bars width={22} height={22} />}
         </button>
       </nav>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-neutral-800 bg-neutral-950/95 px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-[#c3baba] bg-[#e9e3e6]/95 px-4 py-4 space-y-3">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="block text-sm text-neutral-300 hover:text-white transition"
+              className="block text-sm font-semibold text-[#232c33]/80 hover:text-[#9a8f97] transition py-1"
             >
               {link.label}
             </Link>
           ))}
 
-          <div className="pt-3 border-t border-neutral-800 flex flex-col gap-2">
+          <div className="pt-3 border-t border-[#c3baba] flex flex-col gap-2.5">
             {isPending ? null : isLoggedIn ? (
               <>
-                <p className="text-sm text-neutral-400 px-1">
-                  Welcome, <span className="text-white font-medium">{firstName}</span>
+                <p className="text-sm text-[#232c33]/80 px-1">
+                  Welcome, <span className="text-[#232c33] font-bold">{firstName}</span>
                 </p>
                 <button
                   onClick={() => {
                     setMobileOpen(false);
                     handleLogout();
                   }}
-                  className="w-full rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800 transition"
+                  className="btn-secondary w-full text-center px-4 py-2 text-sm font-semibold"
                 >
                   Logout
                 </button>
@@ -132,14 +146,14 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="w-full text-center rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800 transition"
+                  className="btn-secondary w-full text-center px-4 py-2 text-sm font-semibold"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="metallic-button w-full text-center rounded-lg px-4 py-2 text-sm font-medium text-neutral-900 hover:opacity-90 transition"
+                  className="btn-primary w-full text-center px-4 py-2 text-sm font-bold shadow-md"
                 >
                   Register
                 </Link>

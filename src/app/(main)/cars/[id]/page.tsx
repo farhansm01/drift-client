@@ -3,17 +3,21 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { authClient } from "@/lib/auth-client";
 import { getCarById, getAllCars } from "@/lib/api/cars";
 import { getReviewsByCarId } from "@/lib/api/reviews";
 import ReviewForm from "@/components/ReviewForm";
+import CarCard from "@/components/CarCard";
 import type { Car } from "@/types/Car";
 import type { Review } from "@/types/Review";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface CarDetailsPageProps {
     params: Promise<{ id: string }>;
 }
 
 export default function CarDetailsPage({ params }: CarDetailsPageProps) {
+    const { session, isAdmin } = useUserRole();
     const [car, setCar] = useState<Car | null>(null);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [relatedCars, setRelatedCars] = useState<Car[]>([]);
@@ -48,26 +52,54 @@ export default function CarDetailsPage({ params }: CarDetailsPageProps) {
     }, [params]);
 
     if (loading || !car) {
-        return <div className="mx-auto max-w-5xl px-4 py-12 text-neutral-400">Loading...</div>;
+        return <div className="mx-auto max-w-5xl px-4 py-12 text-[#232c33] font-bold">Loading car details...</div>;
     }
 
     const images = [car.image, ...(car.images || [])].filter(Boolean);
+    const isSold = Boolean(car.isSold || car.status === "sold");
+    const isOwner = session?.user?.id === car.createdBy;
 
     return (
-        <div className="mx-auto max-w-5xl px-4 py-12">
+        <div className="mx-auto max-w-5xl px-4 py-12 bg-[#e9e3e6]">
+            {/* Owner/Admin Action Bar & Sold Out Banner */}
+            {isSold && (
+                <div className="mb-6 rounded-2xl bg-red-600 text-white p-4 font-black text-center text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-2">
+                    <span className="text-xl">⚠️</span> THIS VEHICLE HAS BEEN MARKED AS SOLD OUT
+                </div>
+            )}
+
+            {(isOwner || isAdmin) && (
+                <div className="mb-6 rounded-2xl border border-[#b2b2b2] bg-white p-4 shadow-md flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#232c33]">
+                        {isOwner ? "You own this listing" : "Admin Management Controls"}
+                    </span>
+                    <Link
+                        href={`/cars/${id}/edit`}
+                        className="btn-primary rounded-xl px-5 py-2 text-xs font-bold shadow-md"
+                    >
+                        Edit Listing Details
+                    </Link>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     {/* Main image */}
-                    <div className="rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900/40 h-80 mb-3">
+                    <div className="rounded-2xl overflow-hidden border border-[#b2b2b2] bg-white h-80 mb-3 shadow-md relative">
                         {images.length > 0 ? (
                             <img
                                 src={images[activeImage]}
                                 alt={car.title}
-                                className="h-full w-full object-cover"
+                                className={`h-full w-full object-cover ${isSold ? "grayscale-[30%]" : ""}`}
                             />
                         ) : (
-                            <div className="h-full w-full flex items-center justify-center text-neutral-600">
-                                No image
+                            <div className="h-full w-full flex items-center justify-center text-[#9a8f97] text-sm">
+                                No image available
+                            </div>
+                        )}
+                        {isSold && (
+                            <div className="absolute top-4 left-4 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-red-600 text-white shadow-xl border border-red-500">
+                                SOLD OUT
                             </div>
                         )}
                     </div>
@@ -79,7 +111,7 @@ export default function CarDetailsPage({ params }: CarDetailsPageProps) {
                                 <button
                                     key={i}
                                     onClick={() => setActiveImage(i)}
-                                    className={`h-16 w-20 rounded-lg overflow-hidden border-2 transition ${activeImage === i ? "border-neutral-300" : "border-transparent opacity-60"
+                                    className={`h-16 w-20 rounded-xl overflow-hidden border-2 transition ${activeImage === i ? "border-[#232c33] shadow-md" : "border-[#b2b2b2] opacity-70"
                                         }`}
                                 >
                                     <img src={img} alt={`${car.title} ${i + 1}`} className="h-full w-full object-cover" />
@@ -89,100 +121,108 @@ export default function CarDetailsPage({ params }: CarDetailsPageProps) {
                     )}
                 </div>
 
-                <div className="flex flex-col">
-                    <h1 className="text-2xl font-semibold text-white">{car.title}</h1>
-                    <p className="text-neutral-400 text-sm mt-1">{car.shortDescription}</p>
+                <div className="flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-xs uppercase font-extrabold tracking-wider text-white bg-[#232c33] px-3 py-1 rounded-full inline-block">
+                                {car.category}
+                            </span>
+                            {isSold && (
+                                <span className="text-xs uppercase font-extrabold tracking-wider text-white bg-red-600 px-3 py-1 rounded-full inline-block">
+                                    SOLD OUT
+                                </span>
+                            )}
+                        </div>
 
-                    <div className="mt-4">
-                        <span className="text-3xl font-semibold text-white">
-                            ৳{car.price.toLocaleString()}
-                        </span>
+                        <h1 className="text-3xl font-black text-[#232c33] tracking-tight">{car.title}</h1>
+                        <p className="text-[#9a8f97] text-sm mt-1.5 font-semibold">{car.shortDescription}</p>
+
+                        <div className="mt-5">
+                            <span className={`text-4xl font-black tracking-tight ${isSold ? "text-neutral-500 line-through" : "text-[#232c33]"}`}>
+                                ৳{car.price.toLocaleString()}
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
-                        <p className="text-sm text-neutral-400 mb-1">Contact seller</p>
-                        <p className="text-white text-sm">{car.contactInfo}</p>
+                    <div className="mt-6 rounded-2xl border border-[#b2b2b2] bg-white p-5 shadow-md">
+                        {isSold ? (
+                            <div>
+                                <p className="text-xs uppercase font-bold tracking-wider text-red-600 mb-1">Status</p>
+                                <p className="text-[#232c33] text-sm font-bold">This car has been marked as SOLD OUT by the owner.</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <p className="text-xs uppercase font-bold tracking-wider text-[#9a8f97] mb-1">Contact Seller Directly</p>
+                                <p className="text-[#232c33] text-base font-bold">{car.contactInfo}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            <div className="mt-10">
-                <h2 className="text-lg font-semibold text-white mb-2">Overview</h2>
-                <p className="text-neutral-400 text-sm leading-relaxed">{car.fullDescription}</p>
+            <div className="mt-12 rounded-2xl border border-[#b2b2b2] bg-white p-6 shadow-md">
+                <h2 className="text-xl font-black text-[#232c33] mb-3">Vehicle Overview</h2>
+                <p className="text-[#232c33]/80 text-sm leading-relaxed font-normal">{car.fullDescription}</p>
             </div>
 
             <div className="mt-10">
-                <h2 className="text-lg font-semibold text-white mb-4">Specifications</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                        <p className="text-xs text-neutral-500">Category</p>
-                        <p className="text-sm text-white mt-1">{car.category}</p>
+                <h2 className="text-xl font-black text-[#232c33] mb-4">Specifications</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                    <div className="rounded-xl border border-[#b2b2b2] bg-white p-3.5 shadow-sm">
+                        <p className="text-[10px] uppercase font-bold text-[#9a8f97]">Category</p>
+                        <p className="text-sm font-bold text-[#232c33] mt-0.5">{car.category}</p>
                     </div>
-                    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                        <p className="text-xs text-neutral-500">Seats</p>
-                        <p className="text-sm text-white mt-1">{car.seats}</p>
+                    <div className="rounded-xl border border-[#b2b2b2] bg-white p-3.5 shadow-sm">
+                        <p className="text-[10px] uppercase font-bold text-[#9a8f97]">Seats</p>
+                        <p className="text-sm font-bold text-[#232c33] mt-0.5">{car.seats}</p>
                     </div>
-                    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                        <p className="text-xs text-neutral-500">Transmission</p>
-                        <p className="text-sm text-white mt-1">{car.transmission}</p>
+                    <div className="rounded-xl border border-[#b2b2b2] bg-white p-3.5 shadow-sm">
+                        <p className="text-[10px] uppercase font-bold text-[#9a8f97]">Transmission</p>
+                        <p className="text-sm font-bold text-[#232c33] mt-0.5">{car.transmission}</p>
                     </div>
-                    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                        <p className="text-xs text-neutral-500">Fuel Type</p>
-                        <p className="text-sm text-white mt-1">{car.fuelType}</p>
+                    <div className="rounded-xl border border-[#b2b2b2] bg-white p-3.5 shadow-sm">
+                        <p className="text-[10px] uppercase font-bold text-[#9a8f97]">Fuel Type</p>
+                        <p className="text-sm font-bold text-[#232c33] mt-0.5">{car.fuelType}</p>
                     </div>
-                    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                        <p className="text-xs text-neutral-500">Location</p>
-                        <p className="text-sm text-white mt-1">{car.location}</p>
+                    <div className="rounded-xl border border-[#b2b2b2] bg-white p-3.5 shadow-sm">
+                        <p className="text-[10px] uppercase font-bold text-[#9a8f97]">Location</p>
+                        <p className="text-sm font-bold text-[#232c33] mt-0.5">{car.location}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-10">
-                <h2 className="text-lg font-semibold text-white mb-4">Reviews</h2>
+            <div className="mt-12 rounded-2xl border border-[#b2b2b2] bg-white p-6 shadow-md">
+                <h2 className="text-xl font-black text-[#232c33] mb-4">Vehicle Reviews</h2>
                 {reviews.length === 0 ? (
-                    <p className="text-neutral-400 text-sm">No reviews yet for this car.</p>
+                    <p className="text-[#9a8f97] text-sm font-medium">No reviews yet for this car. Be the first to leave one below!</p>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-3 mb-6">
                         {reviews.map((review) => (
                             <div
                                 key={review._id?.toString()}
-                                className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4"
+                                className="rounded-xl border border-[#c3baba] bg-[#e9e3e6]/40 p-4 shadow-sm"
                             >
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm text-white font-medium">{review.userName}</span>
-                                    <span className="text-xs text-neutral-500">
+                                    <span className="text-sm text-[#232c33] font-bold">{review.userName}</span>
+                                    <span className="text-xs text-amber-500 font-bold">
                                         {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
                                     </span>
                                 </div>
-                                <p className="text-sm text-neutral-400">{review.comment}</p>
+                                <p className="text-xs text-[#232c33]/80 font-medium">{review.comment}</p>
                             </div>
                         ))}
                     </div>
                 )}
 
-                <ReviewForm carId={id} />
+                {!isAdmin && <ReviewForm carId={id} carOwnerId={car.createdBy} />}
             </div>
 
             {relatedCars.length > 0 && (
-                <div className="mt-10">
-                    <h2 className="text-lg font-semibold text-white mb-4">Related Cars</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="mt-12">
+                    <h2 className="text-xl font-black text-[#232c33] mb-4">Related Cars</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {relatedCars.map((related) => (
-                            <Link
-                                key={related._id?.toString()}
-                                href={`/cars/${related._id}`}
-                                className="rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden hover:border-neutral-700 transition"
-                            >
-                                <div className="h-32 w-full bg-neutral-800">
-                                    {related.image && (
-                                        <img src={related.image} alt={related.title} className="h-full w-full object-cover" />
-                                    )}
-                                </div>
-                                <div className="p-3">
-                                    <p className="text-sm text-white line-clamp-1">{related.title}</p>
-                                    <p className="text-xs text-neutral-400 mt-1">৳{related.price.toLocaleString()}</p>
-                                </div>
-                            </Link>
+                            <CarCard key={related._id?.toString()} car={related} />
                         ))}
                     </div>
                 </div>

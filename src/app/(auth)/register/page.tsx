@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeSlash } from "@gravity-ui/icons";
+import { Eye, EyeSlash, Car } from "@gravity-ui/icons";
 import { authClient } from "@/lib/auth-client";
 
 interface FieldErrors {
@@ -89,68 +89,85 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-lg p-8 shadow-xl">
-        <h1 className="text-2xl font-semibold text-white mb-1">Create your account</h1>
-        <p className="text-neutral-400 text-sm mb-6">Join Drift and start listing or renting cars.</p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#e9e3e6]">
+      <div className="w-full max-w-md rounded-2xl border border-[#b2b2b2] bg-white p-8 shadow-2xl">
+        <div className="flex items-center gap-2.5 mb-6">
+          <div className="p-2 rounded-xl bg-[#232c33] text-white shadow-md">
+            <Car width={22} height={22} />
+          </div>
+          <span className="font-black tracking-widest text-xl text-[#232c33]">
+            DRIFT
+          </span>
+        </div>
+
+        <h1 className="text-2xl font-black text-[#232c33] mb-1">Create an Account</h1>
+        <p className="text-[#232c33]/70 text-sm mb-6 font-medium">
+          Join Drift to list cars or post reviews.
+        </p>
 
         {errors.general && (
-          <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-2 text-sm text-red-400">
+          <div className="mb-5 rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-600 font-semibold">
             {errors.general}
           </div>
         )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
-            <label className="block text-sm text-neutral-300 mb-1">Full name</label>
+            <label className="block text-xs font-bold text-[#232c33] uppercase tracking-wider mb-1.5">
+              Full Name
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={`w-full rounded-lg bg-neutral-800 border px-3 py-2 text-white focus:outline-none focus:ring-2 ${
+              className={`w-full rounded-xl bg-[#e9e3e6]/50 border px-3.5 py-2.5 text-[#232c33] text-sm placeholder:text-[#9a8f97] font-medium focus:outline-none focus:bg-white transition ${
                 errors.name
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-neutral-700 focus:ring-neutral-500"
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-[#b2b2b2] focus:border-[#232c33]"
               }`}
               placeholder="Farhan Ahmed"
             />
-            {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
+            {errors.name && <p className="mt-1 text-xs text-red-500 font-medium">{errors.name}</p>}
           </div>
 
           <div>
-            <label className="block text-sm text-neutral-300 mb-1">Email</label>
+            <label className="block text-xs font-bold text-[#232c33] uppercase tracking-wider mb-1.5">
+              Email Address
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full rounded-lg bg-neutral-800 border px-3 py-2 text-white focus:outline-none focus:ring-2 ${
+              className={`w-full rounded-xl bg-[#e9e3e6]/50 border px-3.5 py-2.5 text-[#232c33] text-sm placeholder:text-[#9a8f97] font-medium focus:outline-none focus:bg-white transition ${
                 errors.email
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-neutral-700 focus:ring-neutral-500"
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-[#b2b2b2] focus:border-[#232c33]"
               }`}
               placeholder="you@example.com"
             />
-            {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-xs text-red-500 font-medium">{errors.email}</p>}
           </div>
 
           <div>
-            <label className="block text-sm text-neutral-300 mb-1">Password</label>
+            <label className="block text-xs font-bold text-[#232c33] uppercase tracking-wider mb-1.5">
+              Password
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full rounded-lg bg-neutral-800 border px-3 py-2 pr-10 text-white focus:outline-none focus:ring-2 ${
+                className={`w-full rounded-xl bg-[#e9e3e6]/50 border px-3.5 py-2.5 pr-10 text-[#232c33] text-sm placeholder:text-[#9a8f97] font-medium focus:outline-none focus:bg-white transition ${
                   errors.password
-                    ? "border-red-500 focus:ring-red-500"
-                    : "border-neutral-700 focus:ring-neutral-500"
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-[#b2b2b2] focus:border-[#232c33]"
                 }`}
                 placeholder="At least 8 characters"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-200 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9a8f97] hover:text-[#232c33] transition"
                 tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
@@ -162,10 +179,10 @@ export default function RegisterPage() {
               </button>
             </div>
             {errors.password ? (
-              <p className="mt-1 text-xs text-red-400">{errors.password}</p>
+              <p className="mt-1 text-xs text-red-500 font-medium">{errors.password}</p>
             ) : (
-              <p className="mt-1 text-xs text-neutral-500">
-                8+ characters, with uppercase, lowercase, and a number.
+              <p className="mt-1 text-[11px] text-[#9a8f97] font-medium">
+                Must be 8+ characters with uppercase, lowercase, and a number.
               </p>
             )}
           </div>
@@ -173,15 +190,15 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-gradient-to-r from-neutral-200 to-neutral-400 text-neutral-900 font-medium py-2.5 hover:opacity-90 transition disabled:opacity-50"
+            className="w-full btn-primary rounded-xl py-3 text-sm font-bold shadow-md cursor-pointer disabled:opacity-50"
           >
-            {loading ? "Creating account..." : "Create account"}
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
-        <p className="text-sm text-neutral-400 mt-6 text-center">
+        <p className="text-xs text-[#232c33]/70 mt-6 text-center font-medium">
           Already have an account?{" "}
-          <Link href="/login" className="text-neutral-200 underline">
+          <Link href="/login" className="text-[#232c33] font-bold underline hover:text-[#9a8f97] transition">
             Log in
           </Link>
         </p>

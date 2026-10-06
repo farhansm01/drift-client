@@ -60,30 +60,33 @@ export default function MultiImageUpload({ values, onChange, maxImages = 3 }: Mu
 
   return (
     <div>
-      <label className="block text-sm text-neutral-300 mb-1">
-        Additional photos <span className="text-neutral-500">(optional, up to {maxImages})</span>
+      <label className="block text-sm font-semibold text-[#232c33] mb-1.5">
+        Additional photos <span className="text-[#9a8f97] font-normal">(optional, up to {maxImages})</span>
       </label>
 
-      <div className="grid grid-cols-3 gap-2 mb-2">
+      <div className="grid grid-cols-3 gap-3 mb-2">
         {values.map((url, i) => (
-          <div key={i} className="relative rounded-lg overflow-hidden border border-neutral-700 h-20">
+          <div key={i} className="relative rounded-lg overflow-hidden border border-[#b2b2b2] h-24 shadow-sm">
             <img src={url} alt={`Extra ${i + 1}`} className="h-full w-full object-cover" />
             <button
               type="button"
               onClick={() => handleRemove(i)}
-              className="absolute top-1 right-1 rounded bg-neutral-900/80 p-1 text-neutral-200 hover:bg-neutral-900"
+              className="absolute top-1.5 right-1.5 rounded bg-[#232c33]/80 p-1.5 text-white hover:bg-[#232c33] transition"
             >
-              <TrashBin width={12} height={12} />
+              <TrashBin width={14} height={14} />
             </button>
           </div>
         ))}
 
         {values.length < maxImages && (
-          <label className="flex items-center justify-center h-20 rounded-lg border border-dashed border-neutral-700 bg-neutral-800/40 cursor-pointer hover:bg-neutral-800/60 transition">
+          <label className="flex flex-col items-center justify-center h-24 rounded-lg border-2 border-dashed border-[#b2b2b2] bg-[#e9e3e6]/40 cursor-pointer hover:bg-[#e9e3e6]/80 hover:border-[#232c33] transition text-[#232c33]">
             {uploading ? (
-              <span className="text-xs text-neutral-400">...</span>
+              <span className="text-xs font-medium text-[#9a8f97]">Uploading...</span>
             ) : (
-              <ArrowUpFromLine width={18} height={18} className="text-neutral-400" />
+              <>
+                <ArrowUpFromLine width={20} height={20} className="text-[#232c33]" />
+                <span className="text-xs font-semibold text-[#232c33] mt-1">Add photo</span>
+              </>
             )}
             <input
               type="file"
@@ -96,7 +99,7 @@ export default function MultiImageUpload({ values, onChange, maxImages = 3 }: Mu
         )}
       </div>
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs font-semibold text-red-500">{error}</p>}
     </div>
   );
 }
